@@ -1,8 +1,10 @@
 from aiogram import Dispatcher
 from aiogram.types import Message
 
+from tgbot.models.users import User
 
-async def user_start(message: Message):
+
+async def user_start(message: Message, user: User):
     await message.reply("Hello, user!")
 
 
