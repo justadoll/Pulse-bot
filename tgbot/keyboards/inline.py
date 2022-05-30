@@ -17,6 +17,10 @@ def cancel_kb():
 
 def ok_kb():
     return types.InlineKeyboardMarkup().row(types.InlineKeyboardButton('ОK', callback_data=admin_menu.new(action='cancel')))
+
+def check_new_host_rm(host_id:str):
+    return types.InlineKeyboardMarkup().row(types.InlineKeyboardButton('Да!', callback_data=hosts_cb.new(action="check", host_id=host_id)),
+            types.InlineKeyboardButton('Нет!', callback_data=admin_menu.new(action='cancel')))
     
 def get_hosts(hosts:list):
     kb = types.InlineKeyboardMarkup()
@@ -26,4 +30,6 @@ def get_hosts(hosts:list):
     return kb
     
 def del_hostname(id:str):
-    return types.InlineKeyboardMarkup().row(types.InlineKeyboardButton('🛑Удалить хост', callback_data=hosts_cb.new(host_id=id, action="del_host")), cancel_bt)
+    kb = types.InlineKeyboardMarkup().row(types.InlineKeyboardButton('🛑Удалить хост', callback_data=hosts_cb.new(host_id=id, action="del_host")), cancel_bt)
+    kb.add(types.InlineKeyboardButton('Проверить хост!', callback_data=hosts_cb.new(action="check", host_id=id)))
+    return kb

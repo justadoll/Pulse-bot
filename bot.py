@@ -12,6 +12,9 @@ from tgbot.handlers.user import register_user
 from tgbot.middlewares.db import DbMiddleware
 from tgbot.services.database import create_db_session
 
+# from apscheduler.schedulers.asyncio import AsyncIOScheduler
+# from apscheduler.triggers.cron import CronTrigger
+
 logger = logging.getLogger(__name__)
 
 
@@ -60,8 +63,15 @@ async def main():
         await dp.storage.wait_closed()
         await bot.session.close()
 
+async def check_hosts():
+    print("Checking hosts")
+    await asyncio.sleep(5)
+    print("End checking hosts")
 
 if __name__ == '__main__':
+    # scheduler = AsyncIOScheduler()
+    # scheduler.add_job(check_hosts, 'interval', seconds=10, id='test_check_hosts')
+    # scheduler.start()
     try:
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):

@@ -1,4 +1,5 @@
 from aiohttp import ClientSession
+from asyncio import sleep
 from loguru import logger
 from json import loads
 
@@ -32,6 +33,49 @@ async def count_checker(url:str, is_ping:bool) -> dict:
                         if i[2] == "OK":
                             # logger.info(f"[+] HTTP: {node=} {i[2]}")
                             count[node] = count[node] + 1
-            else:
-                logger.warning(f"[-] {node} is down")
+            #else:
+            #    logger.warning(f"[-] {node} is down")
     return count
+
+def final_decision(hostname:str, results:list, active_counter:int, method:str) -> str:
+    actual_counter = 0
+    final_str = f"<b>{hostname}</b>\n<b>{method.upper()}</b>\n\n"
+    # logger.debug(f"{results=}")
+    # logger.debug(f"{active_counter=}")
+    for host in results:
+        if results[host] >= 1:
+            final_str += "🟢"
+        else:
+            final_str += "🔴"
+        final_str += f"<code>{host}</code>\n"
+        actual_counter += results[host]
+    logger.info(f"{active_counter=} {actual_counter=}")
+    if active_counter == actual_counter:
+        logger.success("UP!")
+        final_str += "Status: <b>UP</b>!\n\n"
+    elif actual_counter == 0:
+        logger.error("DOWN!")
+        final_str += "Status: <b>DOWN</b>!\n\n"
+    else:
+        logger.warning("Not all UP or DOWN!")
+        final_str += "Status: <b>Not all UP or DOWN</b>!\n\n"
+    return final_str
+
+async def checker(hostname:str, method:str, nodes:int):
+    json_data = await requester(method=method, host=hostname, nodes=nodes)
+    perm_link = json_data.get('permanent_link', None)
+    logger.info(f"Perm link: {perm_link}")
+    if perm_link:
+        logger.debug("Sleeping...")
+        await sleep(5)
+        if method == "ping":
+            active_counts = nodes * 4
+            is_ping=True
+        else:
+            active_counts = nodes
+            is_ping=False
+        count_results = await count_checker(url=perm_link, is_ping=is_ping)
+        return final_decision(hostname=hostname, results=count_results, active_counter=active_counts, method=method)
+
+    else:
+        logger.error(f"ERROR")

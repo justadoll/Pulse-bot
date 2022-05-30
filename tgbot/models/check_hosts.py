@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, insert, update, func, delete
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean, insert, null, update, func, delete
 from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 import datetime
@@ -11,6 +11,7 @@ class Hosts(Base):
     id = Column(Integer, primary_key=True)
     user = Column(ForeignKey(User.telegram_id, ondelete='CASCADE'))
     hostname = Column(String(length=100))
+    status = Column(Boolean, nullable=True)
     last_change = Column(DateTime)
 
     @classmethod
