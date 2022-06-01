@@ -1,4 +1,5 @@
 import asyncio
+from distutils.command.config import config
 import logging
 
 from aiogram import Bot, Dispatcher
@@ -72,7 +73,8 @@ def tick():
 
 if __name__ == '__main__':
     scheduler = BackgroundScheduler()
-    scheduler.add_job(tick, 'interval', minutes=20)
+    config = load_config(".env")
+    scheduler.add_job(tick, 'interval', minutes=config.tg_bot.minutes_timeout)
     scheduler.start()
     try:
         asyncio.run(main())
