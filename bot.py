@@ -11,12 +11,13 @@ from tgbot.handlers.admin import register_admin
 from tgbot.handlers.user import register_user
 from tgbot.middlewares.db import DbMiddleware
 from tgbot.services.database import create_db_session
+from datetime import datetime 
 
-# from apscheduler.schedulers.asyncio import AsyncIOScheduler
-# from apscheduler.triggers.cron import CronTrigger
+from apscheduler.schedulers.background import BackgroundScheduler
+from tgbot.services.bg_check_hosts import check_hosts
 
 logger = logging.getLogger(__name__)
-
+scheduler = BackgroundScheduler()
 
 def register_all_middlewares(dp):
     dp.setup_middleware(DbMiddleware())
@@ -45,6 +46,7 @@ async def main():
     else:
         storage = MemoryStorage()
 
+    global dp
     bot = Bot(token=config.tg_bot.token, parse_mode='HTML')
     dp = Dispatcher(bot, storage=storage)
 
@@ -63,15 +65,15 @@ async def main():
         await dp.storage.wait_closed()
         await bot.session.close()
 
-async def check_hosts():
-    print("Checking hosts")
-    await asyncio.sleep(5)
-    print("End checking hosts")
+
+def tick():
+    logging.info(f"Tick! The async time is {datetime.now()}")
+    asyncio.run(check_hosts())
 
 if __name__ == '__main__':
-    # scheduler = AsyncIOScheduler()
-    # scheduler.add_job(check_hosts, 'interval', seconds=10, id='test_check_hosts')
-    # scheduler.start()
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(tick, 'interval', minutes=20)
+    scheduler.start()
     try:
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):

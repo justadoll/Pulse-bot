@@ -39,7 +39,7 @@ async def count_checker(url:str, is_ping:bool) -> dict:
 
 def final_decision(hostname:str, results:list, active_counter:int, method:str) -> str:
     actual_counter = 0
-    final_str = f"<b>{hostname}</b>\n<b>{method.upper()}</b>\n\n"
+    final_str = f"<b>{method.upper()}</b>\n\n"
     # logger.debug(f"{results=}")
     # logger.debug(f"{active_counter=}")
     for host in results:
@@ -53,13 +53,16 @@ def final_decision(hostname:str, results:list, active_counter:int, method:str) -
     if active_counter == actual_counter:
         logger.success("UP!")
         final_str += "Status: <b>UP</b>!\n\n"
+        is_up = True
     elif actual_counter == 0:
         logger.error("DOWN!")
         final_str += "Status: <b>DOWN</b>!\n\n"
+        is_up = False
     else:
         logger.warning("Not all UP or DOWN!")
         final_str += "Status: <b>Not all UP or DOWN</b>!\n\n"
-    return final_str
+        is_up = True
+    return (final_str, is_up)
 
 async def checker(hostname:str, method:str, nodes:int):
     json_data = await requester(method=method, host=hostname, nodes=nodes)

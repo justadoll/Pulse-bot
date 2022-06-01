@@ -52,14 +52,30 @@ async def check_new_host(query: CallbackQuery, callback_data: typing.Dict[str, s
     host = await Hosts.get_host(session, id=int(callback_data['host_id']))
     await query.message.bot.send_chat_action(query.message.chat.id, ChatActions.TYPING)
     
-    http_result = await checker(hostname=host[0].hostname, method="http", nodes=25)
-    msg = await query.message.bot.send_message(chat_id=config.tg_bot.channel_id, text=http_result)
-    ping_result = await checker(hostname=host[0].hostname, method="ping", nodes=20)
-    try:
-        await msg.edit_text(http_result+ping_result)
-    except Exception as e:
-        await query.message.bot.send_message(chat_id=config.tg_bot.channel_id, text=ping_result)
-    await query.message.edit_text("<b>Готово!</b>\nРезультаты в канале", reply_markup=ok_kb())
+    http_result, http_is_up = await checker(hostname=host[0].hostname, method="http", nodes=25)
+    ping_result, ping_is_up = await checker(hostname=host[0].hostname, method="ping", nodes=20)
+    
+    if http_is_up != host[0].http_up:
+        print(f"[+] HTTP Status CHANGED! {http_is_up=} {host[0].http_up=}")
+        http_changer = f"<b>{host[0].hostname} changed status!</b>\n"
+        http_result = f"{http_changer}{http_result}"
+        request = await Hosts.edit_host_status(session_maker=session, host_id=host[0].id, http_up=http_is_up, ping_up=ping_is_up)
+        msg = await query.message.bot.send_message(chat_id=config.tg_bot.channel_id, text=http_result)
+    if ping_is_up != host[0].ping_up:
+        print(f"[+] PING Status CHANGED! {ping_is_up=} {host[0].ping_up=}")
+        ping_changer = f"<b>{host[0].hostname} changed status!</b>\n"
+        ping_result = f"{ping_changer}{ping_result}"
+        request = await Hosts.edit_host_status(session_maker=session, host_id=host[0].id, http_up=http_is_up, ping_up=ping_is_up)
+        try:
+            if msg:
+                await msg.edit_text(http_result+ping_result)
+        except UnboundLocalError:
+            await query.message.bot.send_message(chat_id=config.tg_bot.channel_id, text=ping_result)
+        
+    else:
+        print(f"[-] Status NOT changed! {http_is_up=} {host[0].http_up=}\n {ping_is_up=} {host[0].ping_up=}")
+        
+    await query.message.edit_text("<b>Готово!</b>\n<i>Если в канал ничего не было отправленно - хост не изменил свое состояние...</i>", reply_markup=ok_kb())
 
 
 async def admin_add_host(query: CallbackQuery, callback_data: typing.Dict[str, str]):
