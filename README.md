@@ -2,9 +2,9 @@
 
 Telegram bot to monitor up/down hosts via check-host.net API
 
-![UP](https://github.com/justadoll/Pulse-bot/blob/main/pics/up.jpg?raw=true)
+![UP](https://raw.githubusercontent.com/justadoll/Pulse-bot/master/pics/up.jpg)
 
-![Down](https://github.com/justadoll/Pulse-bot/blob/main/pics/down.jpg?raw=true)
+![Down](https://raw.githubusercontent.com/justadoll/Pulse-bot/master/pics/down.jpg)
 
 - [x] Checkhost API 
 - [x] FP (False-positive) by ping if checkhost broken
